@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.net.URI;
 import java.util.logging.Logger;
 
 import org.apache.jena.query.Query;
@@ -120,6 +121,29 @@ public class OwlGenerator implements ShaclFromOwl{
 			}
 		}
 	
+		qexec.close();
+	}
+
+	/**
+	 * This constructor fetches the queries from the provided RDF dataset loaded as a Model
+	 * @param rdfDataset containing a Model with the Astrea queriess
+	 */
+	public OwlGenerator(Model model) {
+		queries = new ArrayList<>();
+
+		Query query = QueryFactory.create(QUERY_FETCH_SPARQL);
+		QueryExecution qexec = QueryExecutionFactory.create(query, model);
+
+		ResultSet results = qexec.execSelect();
+		while(results.hasNext()) {
+			QuerySolution qSol = results.next();
+			String queryFetched  = qSol.get("?query").asLiteral().getString();
+
+			if(queryFetched.length()>1) {
+				queries.add(queryFetched);
+			}
+		}
+
 		qexec.close();
 	}
 	
